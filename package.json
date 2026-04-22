@@ -1,0 +1,22 @@
+{
+  "name": "mfe-demo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "shell",
+    "mfe-angular-app",
+    "mfe-react-app",
+    "mfe-vue-app",
+    "auth-server"
+  ],
+  "devDependencies": {
+    "nx": "^22.5.2"
+  },
+  "scripts": {
+    "start:shell": "npm start --workspace=shell",
+    "start:angular": "npm start --workspace=mfe-angular-app",
+    "start:react": "npm start --workspace=mfe-react-app",
+    "start:vue": "npm start --workspace=mfe-vue-app",
+    "start:auth": "npm start --workspace=auth-server"
+  }
+}

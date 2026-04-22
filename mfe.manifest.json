@@ -1,0 +1,52 @@
+{
+  "$comment": "Central MFE Registry — single source of truth for all remotes. Update URLs/ports here only.",
+  "version": "1.0.0",
+  "platform": "enterprise-mfe-demo",
+  "remotes": {
+    "reactApp": {
+      "type": "webpack-mf",
+      "displayName": "React MFE",
+      "description": "React 19 remote – Webpack 5 Module Federation",
+      "framework": "react",
+      "remoteEntry": "http://localhost:3001/remoteEntry.js",
+      "exposedModule": "./App",
+      "route": "/react-app",
+      "repo": "monorepo",
+      "active": true
+    },
+    "vueApp": {
+      "type": "webpack-mf",
+      "displayName": "Vue MFE",
+      "description": "Vue 3 remote – Webpack 5 Module Federation",
+      "framework": "vue",
+      "remoteEntry": "http://localhost:3002/remoteEntry.js",
+      "exposedModule": "./App",
+      "route": "/vue-app",
+      "repo": "monorepo",
+      "active": true
+    },
+    "mfe-angular-app": {
+      "type": "native-federation",
+      "displayName": "Angular MFE",
+      "description": "Angular 21 Zoneless showcase – Native Federation + Web Component",
+      "framework": "angular",
+      "remoteEntry": "http://localhost:4201/main.js",
+      "webComponent": "mfe-angular",
+      "route": "/angular-app",
+      "repo": "monorepo",
+      "active": true
+    },
+    "angularTodo": {
+      "type": "native-federation",
+      "displayName": "Angular Todo",
+      "description": "Angular 21 Todo App (polyrepo) – Native Federation + Web Component",
+      "framework": "angular",
+      "remoteEntry": "http://localhost:4200/main.js",
+      "webComponent": "angular-todo-app",
+      "route": "/todo-app",
+      "repo": "polyrepo",
+      "repoPath": "C:/AngularToDO/angularTodo",
+      "active": true
+    }
+  }
+}

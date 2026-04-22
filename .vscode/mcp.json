@@ -1,0 +1,58 @@
+{
+  "servers": {
+    "nx": {
+      "command": "npx",
+      "args": ["-y", "@nx/mcp"],
+      "type": "stdio"
+    },
+    "angular-cli": {
+      "command": "npx",
+      "args": ["-y", "@angular/cli", "mcp"]
+    },
+    "angular": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-server-fetch"],
+      "type": "stdio",
+      "env": {
+        "MCP_DOCS_URL": "https://angular.dev/docs"
+      }
+    },
+    "react": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-server-fetch"],
+      "type": "stdio",
+      "env": {
+        "MCP_DOCS_URL": "https://react.dev/reference/react"
+      }
+    },
+    "rsuite": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@rsuite/mcp@latest"]
+    },
+    "vue": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-server-fetch"],
+      "type": "stdio",
+      "env": {
+        "MCP_DOCS_URL": "https://vuejs.org/api/"
+      }
+    },
+    "bootstrap": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-server-fetch"],
+      "type": "stdio",
+      "env": {
+        "MCP_DOCS_URL": "https://getbootstrap.com/docs/5.3/getting-started/introduction/"
+      }
+    },
+    "webpack": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-server-fetch"],
+      "type": "stdio",
+      "env": {
+        "MCP_DOCS_URL": "https://webpack.js.org/concepts/module-federation/"
+      }
+    }
+  }
+}

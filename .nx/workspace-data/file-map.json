@@ -1,0 +1,251 @@
+{
+  "version": "6.0",
+  "nxVersion": "22.6.5",
+  "pathMappings": {},
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "nonProjectFiles": [
+      {
+        "file": ".gitignore",
+        "hash": "11507188176648112208"
+      },
+      {
+        "file": ".vscode/mcp.json",
+        "hash": "8969147331164675855"
+      },
+      {
+        "file": "README.md",
+        "hash": "6000733208165738172"
+      },
+      {
+        "file": "docs/01-architecture-overview.md",
+        "hash": "7091311807675969118"
+      },
+      {
+        "file": "docs/02-shell-framework-comparison.md",
+        "hash": "1275296889219867958"
+      },
+      {
+        "file": "docs/03-shell-framework-decision-adr.md",
+        "hash": "339029398052090122"
+      },
+      {
+        "file": "docs/04-module-federation-wiring.md",
+        "hash": "8617524463109288515"
+      },
+      {
+        "file": "docs/05-auth-flow.md",
+        "hash": "11919418378926464375"
+      },
+      {
+        "file": "docs/06-single-spa-nx-workspace-plan.md",
+        "hash": "12721461216249089522"
+      },
+      {
+        "file": "docs/C4Context.mmd",
+        "hash": "7334767169640500560"
+      },
+      {
+        "file": "docs/linkedin-mfe-article.md",
+        "hash": "6651090591540078494"
+      },
+      {
+        "file": "nx.json",
+        "hash": "5328294535303545743"
+      },
+      {
+        "file": "package.json",
+        "hash": "12254104536362938667"
+      }
+    ],
+    "projectFileMap": {
+      "auth-server": [
+        {
+          "file": "auth-server/db.json",
+          "hash": "8197289744113312654"
+        },
+        {
+          "file": "auth-server/package-lock.json",
+          "hash": "8379287018322730054"
+        },
+        {
+          "file": "auth-server/package.json",
+          "hash": "443674189638862495"
+        }
+      ],
+      "shell": [
+        {
+          "file": "shell/package-lock.json",
+          "hash": "12694047309091919593"
+        },
+        {
+          "file": "shell/package.json",
+          "hash": "6909953189327068998"
+        },
+        {
+          "file": "shell/public/index.html",
+          "hash": "6478451678542160727"
+        },
+        {
+          "file": "shell/src/App.jsx",
+          "hash": "9458618302322162998"
+        },
+        {
+          "file": "shell/src/auth/AuthContext.jsx",
+          "hash": "9568454223096917047"
+        },
+        {
+          "file": "shell/src/auth/Login.jsx",
+          "hash": "13097483912172392700"
+        },
+        {
+          "file": "shell/src/bootstrap.jsx",
+          "hash": "1691305165279626267"
+        },
+        {
+          "file": "shell/src/index.js",
+          "hash": "14117684550984886909"
+        },
+        {
+          "file": "shell/webpack.config.js",
+          "hash": "5354832483688152222"
+        }
+      ],
+      "mfe-angular-app": [
+        {
+          "file": "mfe-angular-app/.gitignore",
+          "hash": "17738933498318317962"
+        },
+        {
+          "file": "mfe-angular-app/.vscode/extensions.json",
+          "hash": "11934160580685414355"
+        },
+        {
+          "file": "mfe-angular-app/.vscode/launch.json",
+          "hash": "16152959541739016562"
+        },
+        {
+          "file": "mfe-angular-app/.vscode/tasks.json",
+          "hash": "7593488805304398039"
+        },
+        {
+          "file": "mfe-angular-app/README.md",
+          "hash": "6707473150892127740"
+        },
+        {
+          "file": "mfe-angular-app/angular.json",
+          "hash": "14877609332379801521"
+        },
+        {
+          "file": "mfe-angular-app/federation.config.js",
+          "hash": "3825063595071693955"
+        },
+        {
+          "file": "mfe-angular-app/package-lock.json",
+          "hash": "13027285131345664200"
+        },
+        {
+          "file": "mfe-angular-app/package.json",
+          "hash": "8564598548107626640"
+        },
+        {
+          "file": "mfe-angular-app/public/favicon.ico",
+          "hash": "3988961587069885523"
+        },
+        {
+          "file": "mfe-angular-app/src/app/app.config.ts",
+          "hash": "17853208610117050736"
+        },
+        {
+          "file": "mfe-angular-app/src/app/app.ts",
+          "hash": "11958616309746253373"
+        },
+        {
+          "file": "mfe-angular-app/src/bootstrap.ts",
+          "hash": "15652174990280061864"
+        },
+        {
+          "file": "mfe-angular-app/src/index.html",
+          "hash": "15743188558907164088"
+        },
+        {
+          "file": "mfe-angular-app/src/main.ts",
+          "hash": "15680640379862188532"
+        },
+        {
+          "file": "mfe-angular-app/src/styles.css",
+          "hash": "2917954890128038984"
+        },
+        {
+          "file": "mfe-angular-app/tsconfig.app.json",
+          "hash": "10136459155298117738"
+        },
+        {
+          "file": "mfe-angular-app/tsconfig.json",
+          "hash": "17876766451236761234"
+        }
+      ],
+      "mfe-react-app": [
+        {
+          "file": "mfe-react-app/package-lock.json",
+          "hash": "16204470890699391096"
+        },
+        {
+          "file": "mfe-react-app/package.json",
+          "hash": "17164681129247637361"
+        },
+        {
+          "file": "mfe-react-app/public/index.html",
+          "hash": "18065386837179811261"
+        },
+        {
+          "file": "mfe-react-app/src/App.jsx",
+          "hash": "3502191050799526105"
+        },
+        {
+          "file": "mfe-react-app/src/bootstrap.jsx",
+          "hash": "1691305165279626267"
+        },
+        {
+          "file": "mfe-react-app/src/index.js",
+          "hash": "14117684550984886909"
+        },
+        {
+          "file": "mfe-react-app/webpack.config.js",
+          "hash": "9471858017473501070"
+        }
+      ],
+      "mfe-vue-app": [
+        {
+          "file": "mfe-vue-app/package-lock.json",
+          "hash": "3171519072249347833"
+        },
+        {
+          "file": "mfe-vue-app/package.json",
+          "hash": "11419039785219101289"
+        },
+        {
+          "file": "mfe-vue-app/public/index.html",
+          "hash": "17132827195080074346"
+        },
+        {
+          "file": "mfe-vue-app/src/App.vue",
+          "hash": "3782491962131432718"
+        },
+        {
+          "file": "mfe-vue-app/src/index.js",
+          "hash": "8388322232274405106"
+        },
+        {
+          "file": "mfe-vue-app/src/wrapper.js",
+          "hash": "12871947439168838792"
+        },
+        {
+          "file": "mfe-vue-app/webpack.config.js",
+          "hash": "6722866715755654471"
+        }
+      ]
+    }
+  },
+  "externalNodesHash": "3244421341483603138"
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "plugins": [],
+  "targetDefaults": {
+    "build": {
+      "cache": true
+    },
+    "start": {
+      "cache": false
+    }
+  },
+  "projects": {
+    "shell": {
+      "root": "shell",
+      "targets": {
+        "start": {
+          "command": "npm start",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        },
+        "build": {
+          "command": "npm run build",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        }
+      }
+    },
+    "mfe-angular-app": {
+      "root": "mfe-angular-app",
+      "targets": {
+        "start": {
+          "command": "npm start",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        },
+        "build": {
+          "command": "npm run build",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        }
+      }
+    },
+    "mfe-react-app": {
+      "root": "mfe-react-app",
+      "targets": {
+        "start": {
+          "command": "npm start",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        },
+        "build": {
+          "command": "npm run build",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        }
+      }
+    },
+    "mfe-vue-app": {
+      "root": "mfe-vue-app",
+      "targets": {
+        "start": {
+          "command": "npm start",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        },
+        "build": {
+          "command": "npm run build",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        }
+      }
+    },
+    "auth-server": {
+      "root": "auth-server",
+      "targets": {
+        "start": {
+          "command": "npm start",
+          "options": {
+            "cwd": "{projectRoot}"
+          }
+        }
+      }
+    },
+    "angularTodo": {
+      "root": "C:/AngularToDO/angularTodo",
+      "targets": {
+        "start": {
+          "command": "npm run start:mfe",
+          "options": { "cwd": "C:/AngularToDO/angularTodo" }
+        },
+        "build": {
+          "command": "npm run build:mfe",
+          "options": { "cwd": "C:/AngularToDO/angularTodo" }
+        }
+      }
+    }
+  },
+  "analytics": false
+}

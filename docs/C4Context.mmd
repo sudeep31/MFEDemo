@@ -1,0 +1,11 @@
+C4Context
+    title System Context — MFE Platform
+
+    Person(user, "End User", "Uses web applications via a browser")
+    System(shell, "Shell (MFE Host)", "Loads, orchestrates and renders all Micro Frontend applications")
+    System_Ext(oidc, "Identity Provider (OIDC)", "Issues JWT tokens. Mock for POC; Keycloak/Azure AD in production")
+    System_Ext(cdn, "CDN / Static Hosts", "Hosts each MFE's remoteEntry.js and static assets independently")
+
+    Rel(user, shell, "Navigates to", "HTTPS")
+    Rel(shell, oidc, "Authenticates via", "OAuth2 / OIDC")
+    Rel(shell, cdn, "Fetches MFE bundles from", "HTTPS / Module Federation")

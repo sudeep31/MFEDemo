@@ -1,0 +1,300 @@
+{
+  "nodes": {
+    "mfe-angular-app": {
+      "name": "mfe-angular-app",
+      "type": "app",
+      "data": {
+        "root": "mfe-angular-app",
+        "name": "mfe-angular-app",
+        "tags": [
+          "npm:private"
+        ],
+        "metadata": {
+          "targetGroups": {
+            "NPM Scripts": [
+              "ng",
+              "start",
+              "build",
+              "watch"
+            ]
+          },
+          "js": {
+            "packageName": "mfe-angular-app",
+            "packageVersion": "0.0.0",
+            "isInPackageManagerWorkspaces": true
+          }
+        },
+        "targets": {
+          "ng": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "ng"
+            },
+            "metadata": {
+              "scriptContent": "ng",
+              "runCommand": "npm run ng"
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "start": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start"
+            },
+            "metadata": {
+              "scriptContent": "ng run mfe-angular-app:serve-original",
+              "runCommand": "npm run start"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": false
+          },
+          "build": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "build"
+            },
+            "metadata": {
+              "scriptContent": "ng build",
+              "runCommand": "npm run build"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": true
+          },
+          "watch": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "watch"
+            },
+            "metadata": {
+              "scriptContent": "ng build --watch --configuration development",
+              "runCommand": "npm run watch"
+            },
+            "configurations": {},
+            "parallelism": true
+          }
+        },
+        "implicitDependencies": []
+      }
+    },
+    "mfe-react-app": {
+      "name": "mfe-react-app",
+      "type": "lib",
+      "data": {
+        "root": "mfe-react-app",
+        "name": "mfe-react-app",
+        "tags": [
+          "npm:public"
+        ],
+        "metadata": {
+          "targetGroups": {
+            "NPM Scripts": [
+              "start",
+              "build"
+            ]
+          },
+          "description": "",
+          "js": {
+            "packageName": "mfe-react-app",
+            "packageVersion": "1.0.0",
+            "packageMain": "index.js",
+            "isInPackageManagerWorkspaces": true
+          }
+        },
+        "targets": {
+          "start": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start"
+            },
+            "metadata": {
+              "scriptContent": "webpack serve --config webpack.config.js",
+              "runCommand": "npm run start"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": false
+          },
+          "build": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "build"
+            },
+            "metadata": {
+              "scriptContent": "webpack --config webpack.config.js",
+              "runCommand": "npm run build"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": true
+          }
+        },
+        "implicitDependencies": []
+      }
+    },
+    "auth-server": {
+      "name": "auth-server",
+      "type": "lib",
+      "data": {
+        "root": "auth-server",
+        "name": "auth-server",
+        "tags": [
+          "npm:public"
+        ],
+        "metadata": {
+          "targetGroups": {
+            "NPM Scripts": [
+              "start"
+            ]
+          },
+          "description": "",
+          "js": {
+            "packageName": "auth-server",
+            "packageVersion": "1.0.0",
+            "packageMain": "index.js",
+            "isInPackageManagerWorkspaces": true
+          }
+        },
+        "targets": {
+          "start": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start"
+            },
+            "metadata": {
+              "scriptContent": "json-server --watch db.json --port 3100",
+              "runCommand": "npm run start"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": false
+          }
+        },
+        "implicitDependencies": []
+      }
+    },
+    "mfe-vue-app": {
+      "name": "mfe-vue-app",
+      "type": "lib",
+      "data": {
+        "root": "mfe-vue-app",
+        "name": "mfe-vue-app",
+        "tags": [
+          "npm:public"
+        ],
+        "metadata": {
+          "targetGroups": {
+            "NPM Scripts": [
+              "start",
+              "build"
+            ]
+          },
+          "description": "",
+          "js": {
+            "packageName": "mfe-vue-app",
+            "packageVersion": "1.0.0",
+            "packageMain": "index.js",
+            "isInPackageManagerWorkspaces": true
+          }
+        },
+        "targets": {
+          "start": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start"
+            },
+            "metadata": {
+              "scriptContent": "webpack serve --config webpack.config.js",
+              "runCommand": "npm run start"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": false
+          },
+          "build": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "build"
+            },
+            "metadata": {
+              "scriptContent": "webpack --config webpack.config.js",
+              "runCommand": "npm run build"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": true
+          }
+        },
+        "implicitDependencies": []
+      }
+    },
+    "shell": {
+      "name": "shell",
+      "type": "lib",
+      "data": {
+        "root": "shell",
+        "name": "shell",
+        "tags": [
+          "npm:public"
+        ],
+        "metadata": {
+          "targetGroups": {
+            "NPM Scripts": [
+              "start",
+              "build"
+            ]
+          },
+          "description": "",
+          "js": {
+            "packageName": "shell",
+            "packageVersion": "1.0.0",
+            "packageMain": "index.js",
+            "isInPackageManagerWorkspaces": true
+          }
+        },
+        "targets": {
+          "start": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start"
+            },
+            "metadata": {
+              "scriptContent": "webpack serve --config webpack.config.js",
+              "runCommand": "npm run start"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": false
+          },
+          "build": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "build"
+            },
+            "metadata": {
+              "scriptContent": "webpack --config webpack.config.js",
+              "runCommand": "npm run build"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": true
+          }
+        },
+        "implicitDependencies": []
+      }
+    }
+  },
+  "externalNodes": {},
+  "dependencies": {
+    "mfe-angular-app": [],
+    "mfe-react-app": [],
+    "auth-server": [],
+    "mfe-vue-app": [],
+    "shell": []
+  },
+  "version": "6.0",
+  "errors": [],
+  "computedAt": 1776855705235
+}

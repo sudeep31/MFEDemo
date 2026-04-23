@@ -818,169 +818,25 @@ Nx is one of the most popular workspace tools for MFE, but it is not the only op
 
 ---
 
-### 1. Nx (v21.x — April 2026)
-
-The most full-featured workspace tool. Built specifically for monorepos with first-class support for React, Angular, Vue, Node.js, and Module Federation.
-
-**Key features:**
-
-- Built-in generators for MFE Shell and Remotes (`@nx/react`, `@nx/angular`, `@nx/module-federation`)
-- `nx affected` — only build, test, and lint what actually changed
-- Project graph visualisation — see all MFE dependencies at a glance
-- Module boundary rules via ESLint (`@nx/enforce-module-boundaries`)
-- Remote caching (Nx Cloud) — CI builds reuse cached results across team members
-- First-class single-spa and Module Federation plugin support
-- Distributed task execution (DTE) — split large CI across multiple machines
-
-| ✅ Pros                                                             | ❌ Cons                                                     |
-| ------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Richest MFE-specific tooling (generators, Module Federation plugin) | Steeper learning curve — many concepts to learn upfront     |
-| `nx affected` saves significant CI time at scale                    | Opinionated project structure — may not fit existing setups |
-| Built-in dependency graph and boundary enforcement                  | Nx Cloud (remote caching + DTE) is a paid service for teams |
-| Strong community and official plugins for all major frameworks      | Plugin ecosystem is Nx-specific — not reusable outside Nx   |
-| Generator scaffolding keeps all MFEs consistent                     | Can feel heavy for small projects with 2–3 apps             |
-
-**Best for:** Large MFE platforms (20–200+ apps), teams wanting opinionated generators, Angular + React mixed workspaces.
-
----
-
-### 2. Turborepo (v2.x — April 2026)
-
-Acquired by Vercel. Focuses purely on task orchestration and caching — intentionally does not provide generators or project structure opinions.
-
-**Key features:**
-
-- Ultra-fast task runner with content-aware hashing
-- Remote caching built-in (Vercel Remote Cache — free for Vercel users)
-- Zero-config for most JavaScript/TypeScript monorepos
-- Works with any package manager (npm, pnpm, yarn, bun)
-- Simple `turbo.json` pipeline definition
-- No code generators — you structure projects however you want
-
-| ✅ Pros                                                      | ❌ Cons                                                              |
-| ------------------------------------------------------------ | -------------------------------------------------------------------- |
-| Extremely fast — written in Rust, minimal overhead           | No MFE-specific tooling — no generators, no Module Federation plugin |
-| Zero opinion on project structure — works with any layout    | No dependency graph visualisation built-in                           |
-| Remote caching is free on Vercel, simple self-hosted options | No module boundary enforcement — teams must self-govern              |
-| Minimal learning curve — just a task runner                  | No framework-specific plugins — all wiring is manual                 |
-| Works perfectly for polyrepo-like monorepo setups            | Less helpful for Angular projects compared to Nx                     |
-
-**Best for:** Teams that want fast caching without opinions, React/Next.js heavy stacks, Vercel-deployed platforms, teams already using pnpm workspaces.
-
----
-
-### 3. pnpm Workspaces (v10.x — April 2026)
-
-Not a build tool — it is a package manager with native workspace support. Often used as the foundation under Nx or Turborepo, but can also stand alone.
-
-**Key features:**
-
-- Native workspace protocol (`workspace:*`) for linking local packages
-- Content-addressable storage — saves disk space dramatically
-- Strict dependency isolation — prevents phantom dependencies
-- `pnpm --filter` to run commands on specific packages
-- `pnpm --filter ...[origin/main]` to run only on changed packages
-- Works with any build tool or bundler
-
-| ✅ Pros                                                     | ❌ Cons                                                             |
-| ----------------------------------------------------------- | ------------------------------------------------------------------- |
-| Fastest install times of any package manager                | No task caching — must pair with Turborepo or Nx for that           |
-| Strictest dependency resolution — catches hidden bugs early | No generators, no project scaffolding                               |
-| Tiny learning curve — just a package manager                | No dependency graph UI — must script your own                       |
-| Perfect foundation layer — use under Nx or Turborepo        | `--filter` syntax is powerful but less intuitive than `nx affected` |
-| Excellent for shared library linking in Hybrid setups       | No module boundary enforcement                                      |
-
-**Best for:** The foundation layer of any monorepo. Pair with Turborepo or Nx on top. Excellent standalone for Hybrid setups with 5–15 packages.
-
----
-
-### 4. Lerna (v8.x — April 2026)
-
-The original JavaScript monorepo tool. Now maintained by Nx (Nrwl). Modern Lerna delegates task running to Nx under the hood.
-
-**Key features:**
-
-- `lerna run` — execute scripts across packages
-- `lerna publish` — versioning and publishing to npm in one command
-- `lerna version` — independent or fixed versioning across packages
-- Powered by Nx task runner for caching and affected detection
-- Changelog generation built-in
-
-| ✅ Pros                                                      | ❌ Cons                                                                  |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| Best-in-class npm publishing workflow                        | No MFE-specific tooling — no generators, no Module Federation            |
-| Independent and fixed versioning modes                       | Modern Lerna is essentially Nx under the hood — why not use Nx directly? |
-| Familiar to teams with long monorepo history                 | Smaller community momentum compared to Nx and Turborepo                  |
-| Good for Hybrid setups — publish shared libs as npm packages | Less relevant for monorepo MFE setups where you don't publish            |
-| Changelog generation saves release management time           | Adds a layer of abstraction over Nx without adding much value            |
-
-**Best for:** Hybrid repo strategy where shared libs need to be versioned and published to npm. Less relevant for pure monorepo MFE setups.
-
----
-
-### 5. Rush (v5.x — April 2026)
-
-Built by Microsoft for managing very large monorepos with hundreds of projects. Used internally across Microsoft's web platform teams.
-
-**Key features:**
-
-- Supports pnpm, npm, and yarn as package managers
-- Phased builds with incremental compilation
-- `rush change` — enforced changelog entries before merge
-- Strict approvals for new dependencies (shrinkwrap-based governance)
-- Cobuild — distributed build execution across CI agents
-- Designed for enterprise governance and compliance
-
-| ✅ Pros                                                            | ❌ Cons                                                           |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| Enterprise-grade governance — dependency approvals, change reviews | Steepest learning curve of all tools on this list                 |
-| Scales to 500+ projects reliably                                   | No MFE generators — all wiring is manual                          |
-| Strict shrinkwrap prevents supply chain surprises                  | Configuration is verbose — `rush.json`, `command-line.json`, etc. |
-| Cobuild distributes work across CI agents at scale                 | Smaller community than Nx and Turborepo                           |
-| Enforced changelogs improve release quality                        | Opinionated workflow — teams must adopt Rush's way of working     |
-
-**Best for:** Large enterprises (500+ packages) with strict governance, compliance requirements, and supply chain security needs.
-
----
-
-### 6. Bazel (v8.x — April 2026)
-
-A polyglot build system from Google. Handles not just JavaScript, but also Java, Go, Python, C++, and more. Overkill for most MFE projects — but unbeatable at massive scale.
-
-**Key features:**
-
-- Language-agnostic — build frontend and backend in one graph
-- Hermetic builds — every build is reproducible regardless of machine state
-- Remote execution — distribute builds across a cluster of machines
-- Fine-grained caching at the file level, not the package level
-- Supports custom build rules for any toolchain
-
-| ✅ Pros                                                      | ❌ Cons                                                           |
-| ------------------------------------------------------------ | ----------------------------------------------------------------- |
-| Scales to tens of thousands of targets                       | Extremely steep learning curve — Starlark build language          |
-| Polyglot — handles Java microservices + JS MFEs in one graph | No JavaScript-specific tooling — everything is manual rules       |
-| Hermetic builds eliminate "works on my machine" issues       | Build files (`BUILD.bazel`) must be maintained per directory      |
-| Remote execution is the gold standard for CI distribution    | Massive infrastructure investment — remote cache servers, workers |
-| Proven at the largest scale imaginable                       | Vastly overkill for teams with under 100 projects                 |
-
-**Best for:** Companies with 10,000+ build targets across multiple languages. Not recommended for typical MFE projects.
-
----
-
 ### Workspace Tool Comparison — At a Glance
 
-|                          | Nx v21                    | Turborepo v2           | pnpm Workspaces v10    | Lerna v8                | Rush v5               | Bazel v8              |
-| ------------------------ | ------------------------- | ---------------------- | ---------------------- | ----------------------- | --------------------- | --------------------- |
-| Primary focus            | Full workspace management | Task running + caching | Package management     | Versioning + publishing | Enterprise governance | Polyglot build system |
-| MFE generators           | ✅ Yes                    | ❌ No                  | ❌ No                  | ❌ No                   | ❌ No                 | ❌ No                 |
-| Module Federation plugin | ✅ Yes                    | ❌ No                  | ❌ No                  | ❌ No                   | ❌ No                 | ❌ No                 |
-| Task caching             | ✅ Local + Remote         | ✅ Local + Remote      | ❌ No                  | ✅ Via Nx               | ✅ Cobuild            | ✅ Remote execution   |
-| Affected / incremental   | ✅ `nx affected`          | ✅ Content hashing     | ⚠️ `--filter` (manual) | ✅ Via Nx               | ✅ Phased builds      | ✅ Fine-grained       |
-| Dependency graph UI      | ✅ Built-in               | ❌ No                  | ❌ No                  | ❌ No                   | ❌ No                 | ✅ `bazel query`      |
-| Module boundaries        | ✅ ESLint rules           | ❌ No                  | ❌ No                  | ❌ No                   | ⚠️ Approvals only     | ❌ No                 |
-| Learning curve           | Medium                    | Low                    | Low                    | Low                     | High                  | Very High             |
-| Best MFE scale           | 20–200+ apps              | 5–50 apps              | 5–15 packages          | Hybrid publishing       | 100–500+ packages     | 1000+ targets         |
-| Recommended for this POC | ✅ Primary choice         | Good alternative       | Use as foundation      | For Hybrid publishing   | Enterprise only       | Not recommended       |
+|                         | **Nx v21**                                                                                                        | **Turborepo v2**                                                  | **pnpm Workspaces v10**                                                | **Lerna v8**                                                         | **Rush v5**                                                                                  | **Bazel v8**                                                               |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **What it is**          | Full workspace platform with MFE generators and project graph                                                     | Minimal fast task runner — no opinions on structure               | Package manager with native workspace support                          | Versioning + publishing tool (powered by Nx internally)              | Enterprise-grade monorepo manager by Microsoft                                               | Polyglot build system from Google (JS + Java + Go + Python)                |
+| **MFE generators**      | ✅ Yes                                                                                                            | ❌ No                                                             | ❌ No                                                                  | ❌ No                                                                | ❌ No                                                                                        | ❌ No                                                                      |
+| **Module Federation**   | ✅ Plugin included                                                                                                | ❌ Manual                                                         | ❌ Manual                                                              | ❌ Manual                                                            | ❌ Manual                                                                                    | ❌ Manual                                                                  |
+| **Task caching**        | ✅ Local + Remote (Nx Cloud)                                                                                      | ✅ Local + Remote (Vercel, free)                                  | ❌ None — pair with Turbo or Nx                                        | ✅ Via Nx                                                            | ✅ Cobuild (self-hosted)                                                                     | ✅ Remote execution (self-hosted)                                          |
+| **Affected builds**     | ✅ `nx affected`                                                                                                  | ✅ Content-aware hashing                                          | ⚠️ `--filter` (manual scripting)                                       | ✅ Via Nx                                                            | ✅ Phased incremental builds                                                                 | ✅ File-level fine-grained                                                 |
+| **Dependency graph UI** | ✅ Visual built-in                                                                                                | ❌ No                                                             | ❌ No                                                                  | ❌ No                                                                | ❌ No                                                                                        | ✅ `bazel query` (CLI only)                                                |
+| **Module boundaries**   | ✅ ESLint `@nx/enforce-module-boundaries`                                                                         | ❌ No                                                             | ❌ No                                                                  | ❌ No                                                                | ⚠️ Dependency approvals only                                                                 | ❌ No                                                                      |
+| **Angular support**     | ✅ First-class `@nx/angular`                                                                                      | ⚠️ Manual setup                                                   | ✅ Works (foundation only)                                             | ✅ Via Nx                                                            | ⚠️ Manual setup                                                                              | ⚠️ Custom Starlark rules                                                   |
+| **Free remote caching** | ⚠️ Nx Cloud — paid for teams                                                                                      | ✅ Free on Vercel                                                 | ❌ No caching                                                          | ✅ Via Nx                                                            | ⚠️ Self-hosted infrastructure                                                                | ⚠️ Self-hosted infrastructure                                              |
+| **Key strength**        | Richest MFE tooling — generators, visual graph, boundary enforcement, single-spa plugin                           | Zero-config, Rust-fast runner, free Vercel remote caching         | Strictest dependency isolation; fastest installs; ideal foundation     | Best-in-class npm versioning and publish workflow with changelogs    | Enterprise governance — dependency approvals, shrinkwrap, enforced changelogs                | Hermetic reproducible builds at Google scale across any language           |
+| **Main limitation**     | Opinionated structure; Nx Cloud is paid for team-scale remote caching                                             | No MFE tooling at all — generators, graph, boundaries all manual  | No caching or build graph — incomplete as a standalone tool            | Just Nx underneath — adds abstraction without meaningful extra value | Steepest learning curve; verbose config; smaller community                                   | Extreme Starlark learning curve; JS teams need full custom rule knowledge  |
+| **Learning curve**      | Medium                                                                                                            | Low                                                               | Low                                                                    | Low                                                                  | High                                                                                         | Very High                                                                  |
+| **Best MFE scale**      | 20–200+ apps                                                                                                      | 5–50 apps                                                         | 5–15 packages (as foundation layer)                                    | Hybrid lib publishing                                                | 100–500+ packages                                                                            | 1,000+ targets                                                             |
+| **Best for**            | Mixed-framework MFE platforms (React + Angular + Vue), Angular-heavy stacks, teams wanting opinionated generators | React/Next.js stacks on Vercel, fast CI without monorepo opinions | Foundation under Nx or Turborepo; Hybrid setups linking local packages | Publishing shared libs to npm in a Hybrid repo strategy              | Large enterprises with strict governance, compliance (PCI-DSS, SOC 2), supply chain controls | 10,000+ build targets across JS, Java, Go, Python — Google-scale platforms |
+| **Recommended for POC** | ✅ Primary choice                                                                                                 | Good alternative                                                  | Use as foundation layer                                                | Hybrid publishing only                                               | Enterprise only                                                                              | Not recommended                                                            |
 
 ---
 

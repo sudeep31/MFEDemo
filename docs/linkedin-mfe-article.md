@@ -17,15 +17,100 @@ Instead of one large React or Angular application owning the entire UI, you spli
 
 ## The Problem It Solves
 
-Most large-scale web applications start as a single frontend codebase. As the product grows, so does the team — and the problems begin:
+Most large-scale web applications start as a single frontend codebase. As the product grows, this codebase accumulates problems at two distinct levels: **functional problems** (what the product cannot do) and **organisational problems** (what the team cannot do). Both must be felt before MFE is the right answer.
 
-- **One team's change can break another team's feature**
-- **Deployment is a bottleneck** — everyone must release together
-- **The codebase becomes a monolith** — slow to build, slow to test
-- **You cannot easily adopt new frameworks or technologies**
-- **Onboarding new developers takes weeks** just to understand the codebase
+---
 
-Micro Frontends solve each of these problems directly.
+### Functional Problems — What the Product Cannot Do
+
+These are product-level symptoms that show up in planning meetings, release post-mortems, and sprint retrospectives — long before anyone mentions architecture.
+
+| Symptom                                                                       | Root cause                                                                                                    | Business impact                                         |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| A feature update in one area of the app breaks a completely unrelated area    | Everything shares the same DOM, state, and JS runtime — any side effect is global                             | Unplanned hotfixes, delayed releases, lost user trust   |
+| You cannot run A/B tests or gradual rollouts on individual features           | The entire frontend deploys as one unit — there is no concept of "ship just this part"                        | Slower product experimentation, higher risk per release |
+| An acquired product or partner widget cannot be integrated cleanly            | The monolith assumes one framework, one build system, one deployment pipeline                                 | Integration takes months instead of days                |
+| The app is slow to load because the whole codebase ships on every page visit  | One giant bundle — users download code for features they will never use                                       | Poor Core Web Vitals, higher bounce rates               |
+| Legacy parts of the UI cannot be rewritten without freezing the whole product | Rewrites must happen inside the monolith — you cannot swap one section independently                          | Technical debt compounds, no escape path                |
+| Different product areas need different release cadences                       | Admin dashboard ships weekly; payment flow ships monthly after compliance review — impossible in one codebase | Teams are blocked waiting for each other                |
+
+> **The clearest signal:** when your product team starts saying _"we cannot ship X until Y team finishes Z"_ — and Y and Z have nothing to do with each other — the frontend is the bottleneck.
+
+---
+
+### Organisational Problems — What the Team Cannot Do
+
+Once the functional problems are visible, the team-level consequences follow:
+
+- **One team's change can break another team's feature** — shared codebase, shared blast radius
+- **Deployment is a bottleneck** — everyone must wait for everyone else to release together
+- **The codebase becomes a monolith** — slow to build, slow to test, slow to understand
+- **You cannot easily adopt new frameworks or technologies** — the whole team must agree and migrate at once
+- **Onboarding new developers takes weeks** just to understand which part of the codebase is "theirs"
+
+---
+
+### How to Know You Are Ready for MFE — The Architectural Decision
+
+MFE is not the right answer for every team. Adding it to a small app with one team introduces unnecessary complexity. The decision should be driven by evidence, not trend-following.
+
+Use this checklist to assess whether MFE is the right next architectural step:
+
+```
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │         IS YOUR TEAM READY FOR MICRO FRONTEND ARCHITECTURE?         │
+  ├──────────────────────────────────────────────────────────────────────┤
+  │                                                                      │
+  │  Functional signals — YES to 2 or more means MFE is worth considering│
+  │                                                                      │
+  │  □ Different product areas have genuinely different release cadences  │
+  │  □ You need to integrate a third-party, acquired, or partner UI       │
+  │  □ Different parts of the app have very different performance needs   │
+  │  □ You need to run independent A/B tests or feature flags per section │
+  │  □ One area of the UI needs a technology the rest cannot adopt        │
+  │                                                                      │
+  │  Team / Scale signals — YES to 2 or more is a strong indicator       │
+  │                                                                      │
+  │  □ More than one team owns the same frontend codebase                 │
+  │  □ A frontend change by one team regularly breaks another team's work │
+  │  □ CI/CD pipeline takes > 20 minutes because everything builds at once│
+  │  □ Onboarding a new developer to the frontend takes > 1 week         │
+  │  □ Teams are blocked on each other for every release                  │
+  │                                                                      │
+  │  Hard boundaries — YES to any one of these means MFE is required     │
+  │                                                                      │
+  │  □ A vendor or partner must deploy their own UI inside your shell     │
+  │  □ Compliance requires one section of the UI to be isolated           │
+  │    (e.g. PCI-DSS for payments, HIPAA for health data)                 │
+  │  □ You are integrating an acquired company's frontend product         │
+  │                                                                      │
+  │  Stop here if:                                                        │
+  │  ✗ You have one team and fewer than 5 developers                      │
+  │  ✗ The product has fewer than 3 distinct functional domains           │
+  │  ✗ All parts of the app always release together by design             │
+  │    → A well-structured monolith with clear module boundaries is better│
+  └──────────────────────────────────────────────────────────────────────┘
+```
+
+**The right question is not "should we use MFE?" — it is "does our product have boundaries that need to be independently deployable?"**
+
+If yes: MFE gives each boundary its own lifecycle.
+If no: a modular monolith with clean internal boundaries is simpler and equally maintainable.
+
+---
+
+### What MFE Actually Solves — The Direct Mapping
+
+| Problem                            | How MFE solves it                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------------------------- |
+| One deploy for the entire frontend | Each MFE has its own CI/CD — deploy only what changed                                     |
+| Framework lock-in                  | Each MFE can use any framework — React, Angular, Vue, or plain JS                         |
+| Slow builds and tests              | Each MFE builds and tests independently — Nx `affected` runs only what changed            |
+| Blocked cross-team releases        | Teams deploy their MFE on their own schedule — no coordination needed                     |
+| Cannot integrate partner/vendor UI | Partner hosts their MFE — Shell loads it by URL. No code access required                  |
+| Compliance isolation               | Payment MFE runs in its own process — strict boundary, independent audit trail            |
+| Legacy UI cannot be replaced       | Replace one MFE at a time — the monolith shell stays stable while sections are rewritten  |
+| Giant bundle on every page         | Shell lazy-loads only the MFE for the current route — users download only what they visit |
 
 ---
 
@@ -45,10 +130,13 @@ The Shell does **not** contain any business logic. It is purely an orchestrator.
 
 Each MFE is an independent application that:
 
-- Lives in its own Git repository
 - Has its own build and deployment pipeline
 - Exposes a URL endpoint (`remoteEntry.js`) that the Shell loads at runtime
 - Can be built in **any framework** — React, Angular, Vue, or plain JavaScript
+- **May or may not live in its own Git repository** — this depends on your repo strategy:
+  - **Monorepo**: all MFEs share one repository (e.g. `github.com/sudeep31/MFEDemo` hosts Shell + React MFE + Vue MFE + Angular MFE together)
+  - **Polyrepo**: each MFE has its own repository (e.g. `github.com/sudeep31/angularTodo` is completely separate)
+  - **Hybrid**: shared libraries are in a central repo; product MFEs each have their own repo
 
 ### 3. Shared Libraries
 
@@ -139,7 +227,7 @@ Each field has a clear job:
 
              ┌─────────────────────────────┐
              │           SHELL             │
-             │     React 18 + Webpack 5    │
+             │     React 19 + Webpack 5    │
              │  (Navigation, Auth, Layout) │
              └──────────────┬──────────────┘
                             │  reads at startup
@@ -553,7 +641,7 @@ Not ready to go live? Set `"active": false` in the manifest. The MFE is register
 
 | Layer                    | Technology                           | Why                                         |
 | ------------------------ | ------------------------------------ | ------------------------------------------- |
-| Shell                    | React 18 + Webpack 5                 | Smallest bundle, best MFE ecosystem         |
+| Shell                    | React 19 + Webpack 5                 | Smallest bundle, best MFE ecosystem         |
 | MFE integration          | Webpack 5 Module Federation          | Runtime loading, no code copying            |
 | Angular MFEs             | Angular 21.5 — Zoneless + Standalone | No Zone.js interference, lighter bundle     |
 | CSS framework            | Bootstrap 5 SCSS                     | No jQuery, design token support             |
@@ -591,6 +679,94 @@ As the platform grows:
 **single-spa** replaces the custom Shell with a framework-agnostic Root Config. It manages the `bootstrap → mount → unmount` lifecycle for every MFE natively — React, Angular, Vue, and Vanilla — without any Web Component wrapping required.
 
 **Nx** provides the monorepo tooling: generate new MFEs in seconds, run only affected builds in CI, visualise dependencies across 50+ projects, and enforce boundary rules so MFEs cannot accidentally import each other.
+
+---
+
+## Adding single-spa to an Nx Monorepo
+
+> **Full implementation details, code samples, and polyrepo configuration are covered in the dedicated guide:**
+> [07-single-spa-nx-implementation.md](https://github.com/sudeep31/MFEDemo/blob/main/docs/07-single-spa-nx-implementation.md)
+
+The high-level steps to integrate single-spa into the MFEDemo Nx workspace are:
+
+**Step 1 — Install packages**
+
+```bash
+npm install single-spa single-spa-react single-spa-angular import-map-overrides
+```
+
+**Step 2 — Create the Root Config application**
+
+Generate a new minimal app in Nx that registers all MFEs. It reads the existing `mfe.manifest.json` — no new registry format needed.
+
+```bash
+nx generate @nx/web:application root-config --directory=apps/root-config
+```
+
+**Step 3 — Set up SystemJS import maps**
+
+single-spa uses SystemJS import maps to resolve MFE URLs at runtime. An `importmap.json` maps each MFE name to its `remoteEntry` URL — the same URLs already in `mfe.manifest.json`.
+
+**Step 4 — Adapt each MFE to export single-spa lifecycles**
+
+Each MFE adds a framework adapter (`single-spa-react`, `single-spa-angular`, or `single-spa-vue`) and exports three functions: `bootstrap`, `mount`, and `unmount`.
+
+**Step 5 — Add Nx `build:spa` and `serve:spa` targets**
+
+Each MFE gets new Nx targets so single-spa builds are independent from the existing Webpack Module Federation builds:
+
+```bash
+nx run-many --target=build:spa --all
+nx affected --target=build:spa   # only rebuild what changed
+```
+
+**Step 6 — Configure the polyrepo `angularTodo`**
+
+Two options (both covered in the implementation guide):
+
+- **Option A (recommended):** Keep the existing Web Component bootstrap. The Root Config wraps `<angular-todo-app>` with a thin single-spa lifecycle — **zero changes to the `angularTodo` repo**.
+- **Option B (advanced):** Run `ng add single-spa-angular` inside the `angularTodo` polyrepo for full lifecycle management with proper Angular zone cleanup.
+
+---
+
+### single-spa Pros and Cons
+
+**Pros:**
+
+| ✅ Advantage                   | Detail                                                                                    |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| True framework agnosticism     | No Web Component wrapper needed — React, Angular, Vue use the same lifecycle protocol     |
+| Proper mount/unmount lifecycle | Memory is cleaned up when MFE unmounts — no Angular instances left in the background      |
+| No host framework dependency   | Root Config is ~50 lines of vanilla JS — not tied to React or any other framework         |
+| Battle-tested at scale         | Used by companies with 100+ MFEs in production (Canopy Tax, Scania, IKEA)                 |
+| DevTools built-in              | `import-map-overrides` lets developers swap any MFE URL in the browser without rebuilding |
+| Reuses existing manifest       | Root Config reads the same `mfe.manifest.json` — no new registry format needed            |
+
+**Cons:**
+
+| ❌ Disadvantage              | When it matters                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Learning curve               | `bootstrap/mount/unmount` + SystemJS + import maps is a new mental model for most teams                       |
+| SystemJS is non-standard     | Differs from native ESM — adds a runtime dependency to every page load                                        |
+| Per-MFE adapter required     | Every MFE needs `single-spa-react`, `single-spa-angular`, or `single-spa-vue`                                 |
+| Shared dependency management | Shared packages (`react`, `@angular/core`) must be in the import map and loaded only once — tricky to version |
+| More moving parts            | Replaces the simplicity of Webpack Module Federation with import maps + SystemJS + adapters                   |
+
+---
+
+### single-spa vs Web Component — Which Approach for This Project?
+
+| Scenario                     | Recommended approach                                                                    |
+| ---------------------------- | --------------------------------------------------------------------------------------- |
+| POC / < 20 MFEs              | **Web Component + manifest** (current setup — simpler, fewer deps)                      |
+| 20–50 MFEs, mixed frameworks | **single-spa + Nx** (lifecycle management becomes valuable)                             |
+| 50+ MFEs                     | **single-spa + Nx import maps** (full orchestration at scale)                           |
+| Polyrepo external vendor MFE | **Web Component** (vendor only needs to publish a URL — no single-spa adapter)          |
+| Polyrepo internal team MFE   | **Either** — Web Component for simplicity, single-spa lifecycle for full memory control |
+
+For this POC with 4 MFEs, the current Web Component + manifest approach is the right choice. single-spa is the natural next step when the platform grows past ~20 MFEs.
+
+For the complete implementation walkthrough, see: [07-single-spa-nx-implementation.md](https://github.com/sudeep31/MFEDemo/blob/main/docs/07-single-spa-nx-implementation.md)
 
 ---
 
@@ -1069,5 +1245,22 @@ That is the promise of Micro Frontend Architecture.
 
 ---
 
+## Reference Resources
+
+| Resource                                            | URL                                                                                   |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| MFEDemo GitHub (Shell + React + Vue + Angular MFEs) | https://github.com/sudeep31/MFEDemo                                                   |
+| AngularTodo GitHub (Polyrepo Angular MFE)           | https://github.com/sudeep31/angularTodo                                               |
+| single-spa + Nx — Full Implementation Guide         | https://github.com/sudeep31/MFEDemo/blob/main/docs/07-single-spa-nx-implementation.md |
+| Webpack 5 Module Federation docs                    | https://webpack.js.org/concepts/module-federation/                                    |
+| `@angular/elements` — Web Components                | https://angular.dev/guide/elements                                                    |
+| `@angular-architects/native-federation`             | https://github.com/angular-architects/module-federation-plugin                        |
+| single-spa official docs                            | https://single-spa.js.org/docs/getting-started-overview                               |
+| Nx Module Federation plugin                         | https://nx.dev/technologies/module-federation/getting-started/intro                   |
+| Angular Zoneless + Signals                          | https://angular.dev/guide/signals                                                     |
+
+---
+
 _Architecture designed for the MFEDemo POC — April 2026_
 _Full technical documentation available in the project's `docs/` folder_
+_Source code: https://github.com/sudeep31/MFEDemo_

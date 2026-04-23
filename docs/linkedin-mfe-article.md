@@ -1,6 +1,5 @@
 # Micro Frontend Architecture — A Practical Guide
 
-**By: Solution Architecture Team**
 **Topic: Building Scalable Web Applications with Micro Frontends**
 
 ---

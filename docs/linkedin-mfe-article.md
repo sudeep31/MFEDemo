@@ -16,218 +16,143 @@ Instead of one large React or Angular application owning the entire UI, you spli
 
 ## The Problem It Solves
 
-Most large-scale web applications start as a single frontend codebase. As the product grows, this codebase accumulates problems at two distinct levels: **functional problems** (what the product cannot do) and **organisational problems** (what the team cannot do). Both must be felt before MFE is the right answer.
+Large frontend applications break in predictable ways. What starts as one team's product eventually carries dozens of modules, hundreds of screens, and backends that have long since evolved into independent microservices — yet the frontend is still one codebase, one build pipeline, one deployment.
+
+The monolith is holding together things that have already grown apart.
+
+The symptoms appear across two dimensions — what the **product cannot do** and what the **teams cannot do**. Both need to be present before MFE is the justified answer. And once they are, the next question is not just _whether_ to use MFE — it is _which strategy_ fits the organisational reality.
 
 ---
 
-### Functional Problems — Reading the Signals in a Large Legacy Application
+### The Warning Signs
 
-When you are dealing with a large, established monolithic frontend — hundreds of screens, dozens of functional modules, backed by many independently deployed backend services — the question is not simply "should we use MFE?". The real questions are:
+Here are the symptoms that show a frontend monolith has grown past the point where a single codebase is the right structure.
 
-1. **Do the functional characteristics of this application justify the cost of decomposition?**
-2. **Where are the natural seams — the module boundaries that are already behaving like separate applications?**
-3. **Once those boundaries are identified, which repo and deployment strategy fits the organisational reality?**
+**Product symptoms — what the application can no longer do:**
 
-MFE is not a rewrite. It is a decomposition strategy. You identify the boundaries that are already under strain and make them explicit.
+| What you observe                                                              | What it tells you                                                                             |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| A change in one module breaks unrelated features elsewhere                    | No enforced boundary — DOM, state, and runtime are all shared across everything               |
+| Modules need different release schedules but are forced to ship as one unit   | Deployment is too coarse — compliance-gated and fast-moving sections are artificially coupled |
+| A legacy section cannot be rewritten without freezing the rest of the product | There is no way to swap one area out independently — the monolith owns everything             |
+| A new framework or library cannot be introduced in just one area              | The entire team must agree and migrate the whole codebase at once                             |
+| A vendor, partner, or acquired product cannot be embedded cleanly             | The monolith assumes one codebase, one build system, one pipeline for everything              |
+| Users download code for features they will never visit on a given page        | No lazy-loading boundary — every module ships in every bundle regardless of the route         |
 
----
+**Team symptoms — what the teams can no longer do:**
 
-#### Stage 1 — Identify Whether Decomposition Is Justified
+| What you observe                                                          | What it tells you                                                          |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| One team's PR regularly blocks or breaks another team's work              | Shared codebase means shared blast radius — ownership has no hard boundary |
+| CI takes 30+ minutes for a small, isolated change                         | Every commit rebuilds and retests everything — there is no scoped build    |
+| A PR in one module needs sign-off from three unrelated teams              | Ownership is unclear — no one knows where the boundary is                  |
+| Onboarding a new developer takes weeks to understand which part is theirs | No module boundaries — the whole codebase is everyone's concern by default |
+| Teams wait on each other for every release                                | Deployment is a shared event — one team can delay the entire platform      |
 
-Start by auditing the application through four lenses. You are looking for evidence that parts of the frontend already want to be independent but cannot be, because the monolith is holding them together artificially.
-
-**Lens 1 — Release independence**
-
-| What you observe                                                                              | What it means                                                                   |
-| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Different modules have genuinely different release cadences                                   | They are logically independent — the monolith is forcing artificial coupling    |
-| Some areas ship every two weeks; others ship quarterly due to compliance gates                | Those compliance-gated areas already need a separate deployment pipeline        |
-| A bug fix in Module A requires a full regression of Modules B, C, D, E                        | The blast radius is too large — there is no boundary between unrelated concerns |
-| You have feature flags controlling 30+ in-progress features simultaneously                    | The app has outgrown single-deployment release management                       |
-| Hotfix in one area forces an emergency release that carries along half-done work from another | The deployment unit is too coarse                                               |
-
-**Lens 2 — Domain and module boundaries**
-
-| What you observe                                                                      | What it means                                                             |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| The application has distinct functional domains with little cross-domain data sharing | These are natural MFE candidates — they already have logical independence |
-| Some modules are backed by a completely separate microservice cluster                 | The backend already has a boundary — the frontend should reflect it       |
-| One module team cannot explain what another module does                               | Cognitive domain boundaries are already in place                          |
-| Two modules share the same DB tables but have different UX owners                     | A harder boundary — the data contract must be resolved before splitting   |
-| Some screens have not been touched in 18 months while others change weekly            | The volatile parts and stable parts should not share a deployment         |
-
-**Lens 3 — Technology and framework pressure**
-
-| What you observe                                                                         | What it means                                                                       |
-| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| One area of the UI requires a third-party component library that conflicts with the rest | The monolith cannot accommodate both — a separate runtime is needed                 |
-| The team wants to adopt a new framework for new modules without migrating the old        | MFE allows new modules to be built in the new framework alongside the existing ones |
-| A vendor or acquired product needs to be embedded and the vendor manages its own code    | Hard polyrepo boundary — the vendor will never share your repository                |
-| Some modules must be PCI-DSS, HIPAA, or SOC 2 isolated                                   | Compliance-regulated sections require explicit, auditable deployment boundaries     |
-| Legacy modules use Angular.js / old React class components — too risky to rewrite now    | Encapsulate them as-is in a legacy MFE shell, migrate incrementally                 |
-
-**Lens 4 — Scale and CI/CD strain**
-
-| What you observe                                                                     | What it means                                                                        |
-| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| CI pipeline takes 30+ minutes for every small change                                 | Everything builds and tests together — decomposition reduces build scope per change  |
-| Onboarding a developer to contribute to one module requires understanding all others | The codebase has no enforced internal boundaries                                     |
-| A PR touching one module requires sign-off from three other module teams             | Ownership is unclear — MFE boundaries establish clear team ownership                 |
-| More than 5 teams share the same frontend repository                                 | Coordination overhead is compounding — independent deployments reduce merge friction |
-
-> **The key question at this stage:** can you draw a diagram of this application and clearly circle groups of screens that could deploy independently without affecting the others — and do those circles map to distinct backend service clusters and distinct teams? If yes, MFE is the right architectural move.
+> **The clearest signal:** when your product team says _"we cannot ship X until Y team finishes Z"_ — and X and Y have nothing to do with each other — the frontend has become the bottleneck.
 
 ---
 
-#### Stage 2 — Identify the Right Strategy Before You Write a Line of Code
+### Is MFE the Right Answer?
 
-Once you have confirmed that decomposition is justified, the next decision is **how the resulting MFEs relate to each other in terms of repositories, ownership, and deployment**. This is the Monorepo / Polyrepo / Hybrid decision — and it should be driven by your organisational reality, not by technical preference.
+MFE is not the right answer for every situation. A well-structured monolith with clear internal module boundaries is simpler and equally effective for small, single-team products.
 
-**Ask these questions about each MFE boundary you have identified:**
+MFE is justified when **YES** applies to at least two of these:
 
 ```
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │     WHICH REPO STRATEGY FITS YOUR ORGANISATIONAL REALITY?             │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │                                                                        │
-  │  Q1: Does the same organisation own all parts of this frontend?       │
-  │        │                                                               │
-  │        ├── YES ──► Q2: Do all teams share the same CI/CD platform?    │
-  │        │                  │                                            │
-  │        │                  ├── YES ──► Monorepo (Nx)                   │
-  │        │                  │           Single repo, shared tooling      │
-  │        │                  │           Atomic changes across MFEs       │
-  │        │                  │                                            │
-  │        │                  └── NO  ──► Hybrid                          │
-  │        │                              Shared libs in monorepo          │
-  │        │                              Individual product MFEs in       │
-  │        │                              their own repos                  │
-  │        │                                                               │
-  │        └── NO  ──► Q3: Is the external part vendor / acquired /       │
-  │                        compliance-isolated?                            │
-  │                          │                                             │
-  │                          ├── YES ──► Polyrepo for that MFE            │
-  │                          │           Shell loads it by URL only        │
-  │                          │           No shared repo or build config    │
-  │                          │                                             │
-  │                          └── NO  ──► Q4: Can both teams agree on      │
-  │                                          shared standards?             │
-  │                                            │                           │
-  │                                            ├── YES ──► Monorepo       │
-  │                                            └── NO  ──► Polyrepo       │
-  │                                                                        │
-  │  Hard boundary rules:                                                  │
-  │  • Compliance-regulated sections (payments, health data) ──► Polyrepo │
-  │  • Vendor / acquired / partner UI ──► Always Polyrepo                 │
-  │  • Teams with completely separate DevOps ──► Polyrepo                 │
-  │  • All internal teams, one CI platform ──► Monorepo or Hybrid         │
-  │  • Shared design system evolves frequently ──► Monorepo for libs      │
-  └────────────────────────────────────────────────────────────────────────┘
+  Product signals:
+  □ Different modules genuinely need different deployment schedules
+  □ A legacy section cannot be migrated without blocking the rest of the product
+  □ A vendor, partner, or acquired product must be embedded
+  □ Compliance requires one area to be isolated (PCI-DSS, HIPAA, SOC 2)
+  □ A new technology needs to be introduced in one area without a full rewrite
+
+  Team signals:
+  □ Multiple teams own the same frontend codebase and regularly block each other
+  □ CI pipeline exceeds 20 minutes because everything builds together
+  □ A change in one module triggers regression of the entire application
+
+  Stop here — a modular monolith is the right answer if:
+  ✗ One team, fewer than 5 developers
+  ✗ Fewer than 3 distinct functional domains
+  ✗ All modules always release together by design
 ```
 
-**Strategy summary:**
+**The right question is not "should we use MFE?" — it is "do we have boundaries that need to be independently deployable?"**
 
-| Strategy | When it fits                                                                                           | What you gain                                                   | What you trade                                            |
-| -------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- | --------------------------------------------------------- |
-| Monorepo | All teams internal, shared CI, shared standards, frequent lib changes                                  | Atomic updates, single toolchain, enforced boundaries           | Repo grows large — Nx `affected` needed to keep CI fast   |
-| Polyrepo | External teams, vendor/partner UIs, compliance isolation, teams with separate DevOps                   | Full autonomy, separate pipelines, independent versioning       | Shared lib updates require cross-repo coordination        |
-| Hybrid   | Internal core product in monorepo + polyrepo MFEs for acquired apps, regulated modules, or partner UIs | Best of both — shared libs are central, isolated parts are free | More orchestration — manifest management becomes critical |
-
-> **The most common mistake:** defaulting to Polyrepo because "it sounds more independent" — then spending months managing version drift in shared libraries across 15 repos. If all your teams are internal and on the same CI platform, Monorepo with Nx is almost always the faster path.
+If yes: MFE gives each boundary its own build, its own deployment, and its own team ownership.
+If no: a modular monolith with enforced internal boundaries is simpler and equally maintainable.
 
 ---
 
-#### Stage 3 — Map Your Modules to MFE Boundaries
+### Choosing Your Strategy — Monorepo, Polyrepo, or Hybrid
 
-Once the strategy is chosen, walk through the legacy application's modules and classify each one:
+Once MFE is justified, the most consequential decision is not which framework to use — it is how your MFEs relate to each other in terms of repositories, ownership, and deployment pipelines. This decision is driven entirely by your organisational structure, not technical preference.
 
-| Module characteristic                                                     | MFE boundary decision                                              |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| High release frequency, distinct team, no shared state with other modules | Independent MFE — own repo if polyrepo, own Nx project if monorepo |
-| Low change rate, tightly coupled to core data model                       | Keep inside the shell for now — migrate later incrementally        |
-| Compliance-regulated (payments, identity, health records)                 | Polyrepo MFE — isolated build, isolated audit trail                |
-| Currently built in a legacy framework that cannot be migrated easily      | Wrap as-is in a Web Component MFE — stabilise before rewriting     |
-| Shared UI patterns (header, nav, auth modal, design tokens)               | Shared library — not an MFE — lives in `libs/` in the monorepo     |
-| Third-party or vendor component                                           | Polyrepo MFE — vendor controls the code and the deployment         |
-| New feature being built from scratch by a new team                        | New MFE — modern framework, clean slate, register via manifest     |
+**Your pain points tell you which strategy fits:**
 
-> **Rule of thumb for large legacy migrations:** you do not decompose everything at once. You identify the 3–5 modules with the highest release friction or compliance isolation requirement, extract those first, and leave the stable core as the shell. The monolith becomes a shell. Modules peel off over time as teams are ready.
-
----
-
-### Organisational Problems — What the Team Cannot Do
-
-Once the functional problems are visible, the team-level consequences follow:
-
-- **One team's change can break another team's feature** — shared codebase, shared blast radius
-- **Deployment is a bottleneck** — everyone must wait for everyone else to release together
-- **The codebase becomes a monolith** — slow to build, slow to test, slow to understand
-- **You cannot easily adopt new frameworks or technologies** — the whole team must agree and migrate at once
-- **Onboarding new developers takes weeks** just to understand which part of the codebase is "theirs"
-
----
-
-### How to Know You Are Ready for MFE — The Architectural Decision
-
-MFE is not the right answer for every team. Adding it to a small app with one team introduces unnecessary complexity. The decision should be driven by evidence, not trend-following.
-
-Use this checklist to assess whether MFE is the right next architectural step:
+| If your primary problem is...                                               | The right strategy | What it gives you                                                                                                  |
+| --------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Internal teams blocked on each other inside one shared repo                 | **Monorepo (Nx)**  | Nx enforces ownership boundaries per project, `nx affected` keeps CI fast, shared lib changes are atomic in one PR |
+| An acquired company or vendor product that must be integrated               | **Polyrepo**       | External team keeps their own repo and pipeline — the Shell loads their MFE by URL only, zero shared codebase      |
+| Compliance-regulated sections (payments, identity, health data)             | **Polyrepo**       | Isolated build pipeline, isolated audit trail, no shared deployment lifecycle with other modules                   |
+| A mix — some teams are internal, some sections are regulated or external    | **Hybrid**         | Core product and shared libs live in a monorepo; regulated or external MFEs live in their own repos                |
+| Design system must stay consistent while product teams deploy independently | **Hybrid**         | Shared libs published as versioned npm packages; each product MFE installs them and deploys freely                 |
 
 ```
   ┌──────────────────────────────────────────────────────────────────────┐
-  │         IS YOUR TEAM READY FOR MICRO FRONTEND ARCHITECTURE?         │
+  │          WHICH REPO STRATEGY FITS YOUR SITUATION?                   │
   ├──────────────────────────────────────────────────────────────────────┤
   │                                                                      │
-  │  Functional signals — YES to 2 or more means MFE is worth considering│
+  │  Q1: Does the same organisation own all parts of the frontend?      │
+  │       │                                                              │
+  │       ├── YES ──► Q2: Do all teams share the same CI platform?      │
+  │       │                 │                                            │
+  │       │                 ├── YES ──► Q3: Tight domain coupling or    │
+  │       │                 │               frequent shared-lib changes? │
+  │       │                 │                  │                         │
+  │       │                 │                  ├── YES ──► MONOREPO     │
+  │       │                 │                  └── NO  ──► HYBRID       │
+  │       │                 │                                            │
+  │       │                 └── NO  ──► HYBRID                          │
+  │       │                                                              │
+  │       └── NO  ──► Are the external parts vendor / acquired /        │
+  │                   compliance-isolated?                               │
+  │                      │                                               │
+  │                      ├── YES ──► POLYREPO (for those MFEs)          │
+  │                      └── NO  ──► HYBRID or MONOREPO                 │
   │                                                                      │
-  │  □ Different product areas have genuinely different release cadences  │
-  │  □ You need to integrate a third-party, acquired, or partner UI       │
-  │  □ Different parts of the app have very different performance needs   │
-  │  □ You need to run independent A/B tests or feature flags per section │
-  │  □ One area of the UI needs a technology the rest cannot adopt        │
-  │                                                                      │
-  │  Team / Scale signals — YES to 2 or more is a strong indicator       │
-  │                                                                      │
-  │  □ More than one team owns the same frontend codebase                 │
-  │  □ A frontend change by one team regularly breaks another team's work │
-  │  □ CI/CD pipeline takes > 20 minutes because everything builds at once│
-  │  □ Onboarding a new developer to the frontend takes > 1 week         │
-  │  □ Teams are blocked on each other for every release                  │
-  │                                                                      │
-  │  Hard boundaries — YES to any one of these means MFE is required     │
-  │                                                                      │
-  │  □ A vendor or partner must deploy their own UI inside your shell     │
-  │  □ Compliance requires one section of the UI to be isolated           │
-  │    (e.g. PCI-DSS for payments, HIPAA for health data)                 │
-  │  □ You are integrating an acquired company's frontend product         │
-  │                                                                      │
-  │  Stop here if:                                                        │
-  │  ✗ You have one team and fewer than 5 developers                      │
-  │  ✗ The product has fewer than 3 distinct functional domains           │
-  │  ✗ All parts of the app always release together by design             │
-  │    → A well-structured monolith with clear module boundaries is better│
+  │  Hard rules — always Polyrepo:                                       │
+  │  • Vendor / partner / acquired product UI                            │
+  │  • Compliance-regulated sections (PCI-DSS, HIPAA, SOC 2)            │
+  │  • Teams with completely separate DevOps pipelines                   │
   └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**The right question is not "should we use MFE?" — it is "does our product have boundaries that need to be independently deployable?"**
+|                      | Monorepo                                                   | Polyrepo                                                     | Hybrid                                                       |
+| -------------------- | ---------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Best for             | Internal teams, shared domain, frequent shared-lib changes | External vendors, acquired apps, strict compliance isolation | Mixed — internal core + external or regulated parts          |
+| Shared lib updates   | Atomic — one PR covers lib and all consumers               | Manual version bump per repo                                 | Versioned npm releases — teams upgrade on their own schedule |
+| Release independence | Coordinated, but `nx affected` scopes builds               | Fully independent — each team deploys alone                  | MFEs independent; shared libs versioned                      |
+| Compliance isolation | Shared policies across all MFEs                            | Full isolation per repo, independent audit trail             | Per-domain isolation — regulated MFEs in their own repos     |
+| Common mistake       | None if all teams are truly internal                       | Version drift across dozens of repos                         | Two-step lib updates require discipline                      |
 
-If yes: MFE gives each boundary its own lifecycle.
-If no: a modular monolith with clean internal boundaries is simpler and equally maintainable.
+> **The most common mistake:** choosing Polyrepo because it _feels_ more autonomous — then spending months managing version drift in shared libraries spread across 15 repos. If all your teams are internal and on the same CI platform, Monorepo with Nx is almost always the faster, safer path.
 
 ---
 
-### What MFE Actually Solves — The Direct Mapping
+### What MFE Solves — Problem to Solution
 
-| Problem                            | How MFE solves it                                                                         |
-| ---------------------------------- | ----------------------------------------------------------------------------------------- |
-| One deploy for the entire frontend | Each MFE has its own CI/CD — deploy only what changed                                     |
-| Framework lock-in                  | Each MFE can use any framework — React, Angular, Vue, or plain JS                         |
-| Slow builds and tests              | Each MFE builds and tests independently — Nx `affected` runs only what changed            |
-| Blocked cross-team releases        | Teams deploy their MFE on their own schedule — no coordination needed                     |
-| Cannot integrate partner/vendor UI | Partner hosts their MFE — Shell loads it by URL. No code access required                  |
-| Compliance isolation               | Payment MFE runs in its own process — strict boundary, independent audit trail            |
-| Legacy UI cannot be replaced       | Replace one MFE at a time — the monolith shell stays stable while sections are rewritten  |
-| Giant bundle on every page         | Shell lazy-loads only the MFE for the current route — users download only what they visit |
+| Problem                                  | How MFE solves it                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| One deploy for the entire frontend       | Each MFE has its own CI/CD — deploy only what changed                           |
+| Framework lock-in                        | Each MFE can use any framework — React, Angular, Vue, or plain JS               |
+| Slow builds and tests                    | Each MFE builds independently — Nx `affected` runs only what changed            |
+| Blocked cross-team releases              | Teams deploy on their own schedule — no coordination needed                     |
+| Cannot integrate partner or vendor UI    | Partner hosts their MFE — Shell loads it by URL, no code access required        |
+| Compliance isolation                     | Regulated MFE runs in its own isolated process — independent audit trail        |
+| Legacy UI that cannot be replaced safely | Replace one MFE at a time — the shell stays stable while sections are rewritten |
+| Giant bundle on every page               | Shell lazy-loads only the MFE for the current route                             |
 
 ---
 
@@ -1100,255 +1025,6 @@ A polyglot build system from Google. Handles not just JavaScript, but also Java,
 | Polyrepo support        | Each MFE is its own Git repo                |
 | Team autonomy           | Teams own their MFE end-to-end              |
 | Resilience              | One MFE crash does not break others         |
-
----
-
-## Monorepo vs Polyrepo vs Hybrid — When to Use Which
-
-This is one of the most debated decisions in MFE architecture. There is no single right answer — the choice depends on your team structure, release cadence, and organisational boundaries.
-
----
-
-### Monorepo — All MFEs in One Repository
-
-All applications and shared libraries live inside a single Git repository, managed with a tool like **Nx**.
-
-```
-company-platform/
-├── apps/
-│   ├── shell/
-│   ├── mfe-react-app/
-│   ├── mfe-angular-app/
-│   └── mfe-dashboard/
-└── libs/
-    ├── auth-lib/
-    ├── design-system/
-    └── web-components/
-```
-
-**Use Monorepo when:**
-
-_Team signals:_
-
-| Situation                                   | Why it helps                                      |
-| ------------------------------------------- | ------------------------------------------------- |
-| All teams sit in the same organisation      | Shared PRs, shared reviews, shared standards      |
-| Shared libraries change frequently          | One PR updates the lib and all consumers together |
-| You want consistent tooling across all MFEs | Single `nx.json`, single lint/test config         |
-| CI needs to build only what changed         | Nx `affected` builds — fast pipelines at scale    |
-| Teams need to see each other's code         | Transparency, easy cross-team refactoring         |
-
-_Project / Functional signals:_
-
-| Situation                                 | Why it helps                                                            |
-| ----------------------------------------- | ----------------------------------------------------------------------- |
-| MFEs share a tightly coupled domain model | Example: `OrderService` used by Cart MFE, Checkout MFE, and Invoice MFE |
-| The design system evolves rapidly         | Every UI change must be reflected across all MFEs instantly             |
-| You have a shared authentication flow     | Auth changes propagate to all MFEs in a single commit                   |
-| All MFEs are part of one product release  | A v2.0 launch needs all features shipped together                       |
-| You need enforced module boundaries       | Nx rules prevent MFE A importing directly from MFE B's internals        |
-
-**Real-World Scenarios (Monorepo fits well):**
-
-- **Large-scale developer platform** — Thousands of internal tools, infrastructure libraries, and UI components live in one repo. Shared tooling ensures consistent standards, and a single PR can update a utility used across hundreds of projects atomically.
-- **Internal enterprise developer portal** — A plugin-based portal where all plugins are built by internal teams. Every plugin shares the same design system and API contracts. A broken contract is caught before it merges because everything is in one place.
-- **Regulated banking platform** — Accounts MFE, Payments MFE, and Cards MFE all share the same customer domain model and regulatory data structures. A compliance change must reflect everywhere simultaneously — monorepo makes that a single PR.
-- **Product suite with tight feature coupling** — Analytics dashboard, reporting engine, and data explorer MFEs share core charting components. Teams co-own the shared library and update it weekly together.
-
-**Pros:**
-
-| ✅ Pro                      | Detail                                                            |
-| --------------------------- | ----------------------------------------------------------------- |
-| Single source of truth      | One place for all code, no version drift between MFEs             |
-| Atomic changes              | Update shared lib and all MFEs in one PR — nothing is left behind |
-| Unified CI/CD               | One pipeline, one set of lint and test rules for everyone         |
-| Nx affected builds          | Only rebuild and retest what actually changed — fast at scale     |
-| Easy cross-team refactoring | Rename a component once — it updates across all MFEs instantly    |
-| Dependency graph visibility | Nx can show you exactly which MFE depends on what                 |
-
-**Cons:**
-
-| ❌ Con                      | Detail                                                               |
-| --------------------------- | -------------------------------------------------------------------- |
-| Repo grows large            | Without Nx, becomes slow to clone and search                         |
-| Shared blast radius         | A bad lint rule or broken CI script affects all teams at once        |
-| Coordination overhead       | Teams must agree on branching strategy, release process, and tooling |
-| Ownership is blurred        | Anyone can technically edit any MFE — governance needed              |
-| Harder for external vendors | Vendors cannot be given access to the full company repo              |
-
----
-
-### Polyrepo — Each MFE in Its Own Repository
-
-Every MFE is completely independent. Each team owns their own Git repo, their own CI/CD pipeline, and their own release schedule.
-
-```
-github.com/sudeep31/MFEDemo          ← Shell + manifest (monorepo)
-github.com/sudeep31/angularTodo      ← Angular Todo (polyrepo MFE)
-```
-
-Each team owns their own Git repo, their own CI/CD pipeline, and their own release schedule.
-
-**Use Polyrepo when:**
-
-_Team signals:_
-
-| Situation                                          | Why it helps                                     |
-| -------------------------------------------------- | ------------------------------------------------ |
-| Teams are in different departments or companies    | Hard boundaries, no shared repo access needed    |
-| MFEs have very different release cycles            | Team A deploys 10x a day, Team B deploys monthly |
-| A vendor or partner owns an MFE                    | They control their own repo entirely             |
-| You want maximum team autonomy                     | No dependency on other teams to merge or release |
-| MFEs are built in completely different tech stacks | No shared tooling assumptions                    |
-
-_Project / Functional signals:_
-
-| Situation                                         | Why it helps                                                          |
-| ------------------------------------------------- | --------------------------------------------------------------------- |
-| Each MFE is a standalone product                  | Example: a marketplace where each seller has their own storefront MFE |
-| MFEs have no shared domain logic                  | Order MFE and HR MFE have nothing in common functionally              |
-| An acquired company’s product is being integrated | Their codebase stays separate — connect via URL only                  |
-| Different compliance or security zones            | Payment MFE under PCI-DSS, others under standard policy               |
-| You need independent scaling of build pipelines   | High-traffic MFEs need their own optimised CI runners                 |
-
-**Real-World Scenarios (Polyrepo fits well):**
-
-- **Large e-commerce marketplace** — Product listing, checkout, recommendations, and seller portal are separate deployments owned by separate squads. Each team releases independently. The shell integrates them purely by URL — no shared codebase.
-- **Media streaming platform with partner tools** — The consumer-facing app and the content-partner submission portal are completely separate products. The partner team deploys on their own schedule and their repo is never touched by the consumer team.
-- **SaaS platform with ISV ecosystem** — The platform team owns the shell and manifest. Each Independent Software Vendor (ISV) builds and hosts their own plugin MFE in their own repo. The platform shell simply loads their `remoteEntry.js` URL — no repo access, no shared CI.
-- **Post-acquisition product integration** — A company acquires another product. Rather than rewriting it, the acquired team keeps their own repo and tech stack. The shell loads their MFE by URL — integration without code coupling.
-
-**Pros:**
-
-| ✅ Pro                      | Detail                                                       |
-| --------------------------- | ------------------------------------------------------------ |
-| Maximum team autonomy       | Each team owns their full lifecycle — no waiting on others   |
-| Hard boundaries             | Teams cannot accidentally break each other's code            |
-| Vendor and partner friendly | External teams get their own repo, no internal access needed |
-| Independent release cycles  | Deploy as fast or as slow as the business demands            |
-| Technology freedom          | Each repo can use its own Node version, bundler, framework   |
-| Simple per-team onboarding  | New developers only need to understand one small repo        |
-
-**Cons:**
-
-| ❌ Con                            | Detail                                                                  |
-| --------------------------------- | ----------------------------------------------------------------------- |
-| Version drift                     | Each repo upgrades shared libs on its own schedule — inconsistency risk |
-| No unified CI view                | Hard to see the health of the whole platform at a glance                |
-| Cross-repo refactoring is painful | A shared interface change requires PRs in every repo separately         |
-| Duplication risk                  | Teams may duplicate utilities or components instead of sharing          |
-| Higher operational overhead       | 50 repos = 50 CI pipelines, 50 dependency update PRs to manage          |
-
----
-
-### Hybrid — Monorepo for Shared Libs, Polyrepo for MFEs
-
-The most common real-world pattern. Shared libraries (auth, design system, web components) live in a central monorepo. Each product MFE lives in its own repo and consumes shared libs as **published npm packages**.
-
-```
-github.com/company/platform-libs     ← Auth, Design System, Web Components
-    (published as @mfe/auth-lib, @mfe/design-system)
-
-github.com/company/mfe-react-app     ← installs @mfe/auth-lib@1.2.0
-github.com/company/mfe-angular-app   ← installs @mfe/auth-lib@1.2.0
-github.com/company/mfe-dashboard     ← installs @mfe/auth-lib@1.2.0
-```
-
-**Use Hybrid when:**
-
-_Team signals:_
-
-| Situation                                           | Why it helps                                                |
-| --------------------------------------------------- | ----------------------------------------------------------- |
-| Shared code is stable and versioned                 | Teams pin to a version, upgrade on their schedule           |
-| MFE teams have different organisational ownership   | Each team controls their own repo and deploy                |
-| You want design system consistency without coupling | Design system releases as versioned npm package             |
-| Some MFEs are internal, some are third-party        | Internal teams use the libs; external vendors pin their own |
-| You are migrating from a monolith gradually         | Extract MFEs one by one into their own repos                |
-
-_Project / Functional signals:_
-
-| Situation                                                         | Why it helps                                                                      |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Core platform APIs are stable but product features change rapidly | Shared libs are versioned; product MFEs release freely                            |
-| You have a design system team and separate product teams          | Design system team publishes npm packages; product teams consume them             |
-| Some domains are regulated, others are not                        | Payment MFE uses pinned, audited auth-lib version; other MFEs upgrade freely      |
-| You are building a white-label platform                           | Shell + shared libs are the platform; each client gets their own branded MFE repo |
-| Multiple products share authentication but not UI                 | Auth-lib is central; each product has its own design and MFE repo                 |
-
-**Real-World Scenarios (Hybrid fits well):**
-
-- **Cloud management console** — A central design system is published as a versioned npm package. Each product area (compute, storage, networking, AI services) is a separate repo owned by a separate team. They consume the design system package and deploy their portal section independently.
-- **Retail platform with regional storefronts** — Shared design tokens and a component library are published centrally. Each regional storefront (US, UK, India, Germany) is a separate repo that pins its own version of the shared library and deploys on a regional schedule.
-- **Multi-product SaaS suite** — A platform team publishes `@platform/auth-lib` and `@platform/design-system` as npm packages. Each product (Admin, Analytics, Billing, Support) lives in its own repo, installs the packages, and releases freely without coordinating with other product teams.
-- **Insurance or financial services platform** — `@company/design-system` and `@company/auth-lib` are owned by a platform team and versioned strictly. Quote MFE, Claims MFE, and Policy MFE are separate repos. The Payment MFE pins an audited, PCI-compliant version of auth-lib, while other MFEs upgrade freely.
-
-**Pros:**
-
-| ✅ Pro                      | Detail                                                                      |
-| --------------------------- | --------------------------------------------------------------------------- |
-| Shared libs stay consistent | Design system and auth-lib are versioned and released centrally             |
-| MFE teams stay autonomous   | Each MFE repo deploys independently on its own schedule                     |
-| Vendor compatible           | External teams consume published npm packages — no repo access needed       |
-| Gradual migration path      | Extract MFEs from a monolith one at a time without restructuring everything |
-| Best of both worlds         | Central governance on shared code, freedom on product code                  |
-
-**Cons:**
-
-| ❌ Con                                    | Detail                                                                        |
-| ----------------------------------------- | ----------------------------------------------------------------------------- |
-| Version drift still possible              | MFE A on `@mfe/auth-lib@1.2`, MFE B on `@mfe/auth-lib@1.0` — needs discipline |
-| Package registry required                 | Must set up npm, GitHub Packages, or Azure Artifacts to publish shared libs   |
-| Two-step shared lib updates               | Change the lib → publish → each MFE bumps version → each MFE deploys          |
-| Release coordination for breaking changes | A breaking change in auth-lib forces all MFE teams to upgrade together        |
-| More complex initial setup                | More moving parts than pure monorepo or pure polyrepo                         |
-
----
-
-### Decision Summary
-
-```
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │               HOW TO CHOOSE YOUR REPO STRATEGY                      │
-  ├──────────────────────────────────────────────────────────────────────┤
-  │                                                                      │
-  │  Q1: Are all MFE teams inside the same organisation?                │
-  │                                                                      │
-  │    YES ──► Q2: Do MFEs share tightly coupled domain logic?          │
-  │                  │                                                   │
-  │                  ├── YES ──► MONOREPO (Nx)                          │
-  │                  │            Google, Meta, Spotify model            │
-  │                  │                                                   │
-  │                  └── NO  ──► Q3: Independent deploys needed?        │
-  │                                   │                                  │
-  │                                   ├── NO  ──► MONOREPO (Nx)         │
-  │                                   │                                  │
-  │                                   └── YES ──► HYBRID                │
-  │                                               Microsoft Azure, IKEA │
-  │                                                                      │
-  │    NO  ──► Q4: External vendors or acquired teams involved?         │
-  │                  │                                                   │
-  │                  ├── YES ──► POLYREPO                               │
-  │                  │            Amazon, Zalando, Netflix model         │
-  │                  │                                                   │
-  │                  └── NO  ──► HYBRID                                 │
-  │                               Shopify, Insurance platform model     │
-  └──────────────────────────────────────────────────────────────────────┘
-```
-
-|                          | Monorepo                                                             | Polyrepo                                                                    | Hybrid                                                                  |
-| ------------------------ | -------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Team structure           | One org, close collaboration                                         | Multiple orgs or vendors                                                    | Mixed — internal + external                                             |
-| Domain coupling          | Tightly coupled domains                                              | Independent domains                                                         | Shared platform, separate products                                      |
-| Shared lib updates       | Instant — one PR                                                     | Manual version bumps per repo                                               | Versioned npm releases                                                  |
-| Release independence     | Low — coordinated                                                    | High — fully independent                                                    | Medium — MFEs independent                                               |
-| Vendor / partner MFEs    | Not suitable                                                         | Best fit                                                                    | Supported via npm registry                                              |
-| Design system            | Shared in same repo                                                  | Each team owns theirs                                                       | Published as versioned package                                          |
-| Compliance / isolation   | Shared policies only                                                 | Full isolation per repo                                                     | Per-domain isolation possible                                           |
-| Tooling complexity       | Medium (Nx manages it)                                               | Low per repo, high overall                                                  | Medium                                                                  |
-| Best for scale           | Up to ~50 MFEs                                                       | Any scale                                                                   | 20–200+ MFEs                                                            |
-| Real-world reference     | Developer portals, banking platforms, tightly coupled product suites | E-commerce marketplaces, SaaS ISV ecosystems, post-acquisition integrations | Cloud consoles, multi-region storefronts, regulated financial platforms |
-| Recommended for this POC | Start here                                                           | Use for vendor MFEs                                                         | Evolve into this at scale                                               |
 
 ---
 

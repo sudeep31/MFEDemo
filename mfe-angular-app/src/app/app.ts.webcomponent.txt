@@ -1,6 +1,4 @@
-import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
-
-const MFE_KEY = 'mfe-angular-app';
+import { Component, input, computed } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -73,45 +71,22 @@ const MFE_KEY = 'mfe-angular-app';
   `,
   styles: [],
 })
-export class App implements OnInit, OnDestroy {
-  // Writable signals — updated by the window event bus (mfe:stats-update).
-  // Template syntax is identical to input() signals: visitCount(), userName() etc.
-  readonly visitCount = signal(0);
-  readonly allVisitCounts = signal<Record<string, number>>({});
-  readonly userName = signal('');
-  readonly sessionStartTime = signal('');
-  readonly lastVisited = signal('');
+export class App {
+  // input() signals — Angular 17+ reactive inputs.
+  // Angular Elements generates DOM property getters/setters for these
+  // automatically, just like @Input(). When the Shell does:
+  //   wcRef.current.visitCount = 5
+  // Angular Elements calls the generated setter → signal updates →
+  // zoneless change detection rerenders only the affected expressions.
+  // No @Input() decorator or manual signal wrapper needed.
+  visitCount = input(0);
+  allVisitCounts = input<Record<string, number>>({});
+  userName = input('');
+  sessionStartTime = input('');
+  lastVisited = input('');
 
   // Derived signal — recomputes only when allVisitCounts changes
   protected readonly allVisitEntries = computed(() =>
     Object.entries(this.allVisitCounts()).map(([key, count]) => ({ key, count }))
   );
-
-  private readonly onStats = (e: Event): void => {
-    const d = (e as CustomEvent<Record<string, unknown>>).detail;
-    if (d['mfeKey'] !== MFE_KEY) return;
-    this.visitCount.set(d['visitCount'] as number ?? 0);
-    this.allVisitCounts.set(d['allVisitCounts'] as Record<string, number> ?? {});
-    this.userName.set(d['userName'] as string ?? '');
-    this.sessionStartTime.set(d['sessionStartTime'] as string ?? '');
-    this.lastVisited.set(d['lastVisited'] as string ?? '');
-  };
-
-  ngOnInit(): void {
-    // Read registry immediately — handles race where event fired before this element mounted
-    const bus = (globalThis as unknown as { _mfeBus?: Record<string, Record<string, unknown>> })._mfeBus;
-    const cached = bus?.[MFE_KEY];
-    if (cached) {
-      this.visitCount.set(cached['visitCount'] as number ?? 0);
-      this.allVisitCounts.set(cached['allVisitCounts'] as Record<string, number> ?? {});
-      this.userName.set(cached['userName'] as string ?? '');
-      this.sessionStartTime.set(cached['sessionStartTime'] as string ?? '');
-      this.lastVisited.set(cached['lastVisited'] as string ?? '');
-    }
-    globalThis.addEventListener('mfe:stats-update', this.onStats);
-  }
-
-  ngOnDestroy(): void {
-    globalThis.removeEventListener('mfe:stats-update', this.onStats);
-  }
 }

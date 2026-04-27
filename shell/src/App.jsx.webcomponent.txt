@@ -67,22 +67,6 @@ function buildMfeProps(key, visitStats, user) {
   };
 }
 
-// Event bus — dispatch stats to React, Vue, Angular MFE via window CustomEvent.
-// Angular Todo receives stats via DOM properties (Web Component approach) instead.
-function dispatchMfeStats(remotes, visitStats, user) {
-  if (typeof globalThis === 'undefined') return;
-  globalThis._mfeBus = globalThis._mfeBus || {};
-  remotes
-    .filter((r) => r.key !== 'angularTodo')
-    .forEach((r) => {
-      const props = buildMfeProps(r.key, visitStats, user);
-      globalThis._mfeBus[r.key] = props;
-      globalThis.dispatchEvent(
-        new CustomEvent('mfe:stats-update', { detail: { mfeKey: r.key, ...props } })
-      );
-    });
-}
-
 // Fires once when the MFE route mounts — increments the counter for that MFE
 function VisitTracker({ mfeKey, onVisit }) {
   useEffect(() => { onVisit(mfeKey); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -362,11 +346,6 @@ function ProtectedRoutes() {
 
   const handleVisit = (key) => trackVisit(key, setVisitStats);
 
-  // Fire event bus whenever visit stats change (covers all non-Todo MFEs)
-  useEffect(() => {
-    if (user) dispatchMfeStats(remotes, visitStats, user);
-  }, [visitStats, user]); // eslint-disable-line react-hooks/exhaustive-deps
-
   if (!user) return <Login />;
 
   return (
@@ -385,8 +364,7 @@ function ProtectedRoutes() {
               <>
                 <VisitTracker mfeKey={remote.key} onVisit={handleVisit} />
                 <MfeLoader name={remote.displayName}>
-                  {/* React + Vue: receive stats via event bus — no props needed */}
-                  <Comp />
+                  <Comp {...mfeProps} />
                 </MfeLoader>
               </>
             ) : (
@@ -398,11 +376,7 @@ function ProtectedRoutes() {
             element = (
               <>
                 <VisitTracker mfeKey={remote.key} onVisit={handleVisit} />
-                {/* angularTodo: DOM properties; mfe-angular-app: event bus (null skips DOM assignment) */}
-                <NativeFederationMfe
-                  config={remote}
-                  mfeProps={remote.key === "angularTodo" ? mfeProps : null}
-                />
+                <NativeFederationMfe config={remote} mfeProps={mfeProps} />
               </>
             );
           }

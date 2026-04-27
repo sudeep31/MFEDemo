@@ -3,6 +3,8 @@ import App from "./App.vue";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useEffect, useRef } from "react";
 
+// Vue MFE receives stats via the window event bus (mfe:stats-update).
+// The Vue app subscribes internally — no props or provide/inject needed here.
 function VueWrapper() {
   const containerRef = useRef(null);
   const appInstanceRef = useRef(null);

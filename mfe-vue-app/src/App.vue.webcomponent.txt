@@ -76,27 +76,21 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from "vue";
-
-const MFE_KEY = "vueApp";
-const DEFAULTS = { visitCount: 0, allVisitCounts: {}, userName: "", sessionStartTime: "", lastVisited: "" };
+import { inject, computed } from "vue";
 
 export default {
   name: "VueApp",
   setup() {
-    // Read registry first — handles race where event fired before Vue mounted
-    const stats = ref(globalThis._mfeBus?.[MFE_KEY] ?? { ...DEFAULTS });
-
-    function handler(e) {
-      if (e.detail?.mfeKey === MFE_KEY) {
-        const { mfeKey, ...rest } = e.detail; // eslint-disable-line no-unused-vars
-        stats.value = rest;
+    const mfeStats = inject("mfeStats", null);
+    const stats = computed(() =>
+      mfeStats?.value ?? {
+        visitCount: 0,
+        allVisitCounts: {},
+        userName: "",
+        sessionStartTime: "",
+        lastVisited: "",
       }
-    }
-
-    onMounted(() => globalThis.addEventListener("mfe:stats-update", handler));
-    onBeforeUnmount(() => globalThis.removeEventListener("mfe:stats-update", handler));
-
+    );
     return { stats };
   },
 };

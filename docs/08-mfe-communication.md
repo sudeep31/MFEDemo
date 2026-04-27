@@ -718,7 +718,7 @@ eventBus.emit("cart:refresh"); // signal — Cart MFE fetches its own data
 
 ## Reference
 
-- [Module Federation Wiring](./04-module-federation-wiring.md) — how the Shell and remotes are configured
-- [Auth Flow](./05-auth-flow.md) — how the auth token is created, stored, and shared
-- [single-spa + Nx Workspace Plan](./06-single-spa-nx-workspace-plan.md) — how single-spa lifecycle props are structured
-- [Architecture Overview](./01-architecture-overview.md) — the full picture of all MFEs
+- [Module Federation Wiring](https://github.com/sudeep31/MFEDemo/blob/main/docs/04-module-federation-wiring.md) — how the Shell and remotes are configured
+- [Auth Flow](https://github.com/sudeep31/MFEDemo/blob/main/docs/05-auth-flow.md) — how the auth token is created, stored, and shared
+- [single-spa + Nx Workspace Plan](https://github.com/sudeep31/MFEDemo/blob/main/docs/06-single-spa-nx-workspace-plan.md) — how single-spa lifecycle props are structured
+- [Architecture Overview](https://github.com/sudeep31/MFEDemo/blob/main/docs/01-architecture-overview.md) — the full picture of all MFEs

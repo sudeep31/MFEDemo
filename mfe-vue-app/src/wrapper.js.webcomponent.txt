@@ -1,0 +1,57 @@
+/* eslint-disable react/prop-types */
+import { createApp, ref } from "vue";
+import App from "./App.vue";
+import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useEffect, useRef } from "react";
+
+function VueWrapper({
+  visitCount = 0,
+  allVisitCounts = {},
+  userName = "",
+  sessionStartTime = "",
+  lastVisited = "",
+}) {
+  const containerRef = useRef(null);
+  const appInstanceRef = useRef(null);
+  // Reactive ref shared with the Vue app via provide/inject
+  const statsRef = useRef(null);
+
+  useEffect(() => {
+    if (containerRef.current && !appInstanceRef.current) {
+      statsRef.current = ref({
+        visitCount,
+        allVisitCounts,
+        userName,
+        sessionStartTime,
+        lastVisited,
+      });
+      appInstanceRef.current = createApp(App);
+      appInstanceRef.current.provide("mfeStats", statsRef.current);
+      appInstanceRef.current.mount(containerRef.current);
+    }
+    return () => {
+      if (appInstanceRef.current) {
+        appInstanceRef.current.unmount();
+        appInstanceRef.current = null;
+        statsRef.current = null;
+      }
+    };
+  }, []);
+
+  // Keep Vue reactive ref in sync whenever Shell pushes updated props
+  useEffect(() => {
+    if (statsRef.current) {
+      statsRef.current.value = {
+        visitCount,
+        allVisitCounts,
+        userName,
+        sessionStartTime,
+        lastVisited,
+      };
+    }
+  }, [visitCount, allVisitCounts, userName, sessionStartTime, lastVisited]);
+
+  return React.createElement("div", { ref: containerRef });
+}
+
+export default VueWrapper;

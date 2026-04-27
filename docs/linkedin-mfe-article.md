@@ -1,6 +1,4 @@
-﻿# Micro Frontends in Practice: The Complete Guide
-
-**Building Scalable Web Applications with Micro Frontend Architecture**
+﻿# Little bit on Micro Frontends
 
 ---
 
@@ -485,7 +483,8 @@ or React/Angular framework internals.
 > library. This is what preserves independent deployability.
 
 > For complete flow diagrams, code examples for all three strategies, security rules, performance
-> guidelines, and event naming conventions — see: [08-mfe-communication.md](./08-mfe-communication.md)
+> guidelines, and event naming conventions — see the dedicated guide:
+> **https://github.com/sudeep31/MFEDemo/blob/main/docs/08-mfe-communication.md**
 
 ---
 
@@ -771,7 +770,7 @@ That is the promise of Micro Frontend Architecture.
 | MFEDemo GitHub (Shell + React + Vue + Angular) | https://github.com/sudeep31/MFEDemo                                                   |
 | AngularTodo GitHub (Polyrepo Angular MFE)      | https://github.com/sudeep31/angularTodo                                               |
 | single-spa + Nx — Full Implementation Guide    | https://github.com/sudeep31/MFEDemo/blob/main/docs/07-single-spa-nx-implementation.md |
-| MFE Communication — Complete Guide             | ./08-mfe-communication.md                                                             |
+| MFE Communication — Complete Guide             | https://github.com/sudeep31/MFEDemo/blob/main/docs/08-mfe-communication.md            |
 | Webpack 5 Module Federation docs               | https://webpack.js.org/concepts/module-federation/                                    |
 | `@angular/elements` — Web Components           | https://angular.dev/guide/elements                                                    |
 | `@angular-architects/native-federation`        | https://github.com/angular-architects/module-federation-plugin                        |

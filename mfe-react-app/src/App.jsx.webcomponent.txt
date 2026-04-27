@@ -1,26 +1,14 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable react/prop-types */
+import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const MFE_KEY = "reactApp";
-const DEFAULTS = { visitCount: 0, allVisitCounts: {}, userName: "", sessionStartTime: "", lastVisited: "" };
-
-export default function App() {
-  // Read registry first (handles case where event fired before this mounted)
-  const [stats, setStats] = useState(() => globalThis._mfeBus?.[MFE_KEY] ?? DEFAULTS);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.detail?.mfeKey === MFE_KEY) {
-        const { mfeKey, ...rest } = e.detail; // eslint-disable-line no-unused-vars
-        setStats(rest);
-      }
-    };
-    globalThis.addEventListener("mfe:stats-update", handler);
-    return () => globalThis.removeEventListener("mfe:stats-update", handler);
-  }, []);
-
-  const { visitCount, allVisitCounts, userName, sessionStartTime, lastVisited } = stats;
-
+export default function App({
+  visitCount = 0,
+  allVisitCounts = {},
+  userName = "",
+  sessionStartTime = "",
+  lastVisited = "",
+}) {
   return (
     <div className="container mt-4">
       <div className="alert alert-primary">
